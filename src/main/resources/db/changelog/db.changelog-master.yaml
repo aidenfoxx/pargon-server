@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: '1'
+      author: aidenfoxx
+      changes:
+        - createTable:
+            tableName: settings
+            columns:
+              - column:
+                  name: key
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: value
+                  type: text
+  - changeSet:
+      id: '2'
+      author: aidenfoxx
+      changes:
+        - createTable:
+            tableName: media
+            columns:
+              - column:
+                  name: id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: path
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: hdr10_params
+                  type: varchar(255)
+              - column:
+                  name: hdr10_plus_data
+                  type: text

@@ -1,0 +1,16 @@
+logging:
+  level:
+    root: INFO
+
+spring:
+  datasource:
+    url: jdbc:sqlite:target/pargon-server.db
+  jpa:
+    # TODO: Enable when upgraded to Spring 3.0
+    #database-platform: org.hibernate.community.dialect.SQLiteDialect
+    database-platform: org.sqlite.hibernate.dialect.SQLiteDialect
+
+pargon:
+  media-extensions: mp4, mov, wmv, avi, mkv
+  ffmpeg-path: target/bin/ffmpeg.exe
+  ffprobe-path: target/bin/ffprobe.exe
