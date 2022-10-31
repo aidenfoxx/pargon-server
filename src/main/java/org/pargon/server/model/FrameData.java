@@ -7,9 +7,6 @@ import lombok.Getter;
 @Getter
 public class FrameData {
 
-  @JsonProperty("pix_fmt")
-  private String pixelFormat;
-
   @JsonProperty("color_space")
   private String colorSpace;
 

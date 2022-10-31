@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Getter;
 
 @Getter
-public class MediaInfo {
+public class MediaProbe {
 
   @JsonProperty("frames")
   private List<FrameData> frames;

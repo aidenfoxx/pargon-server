@@ -1,18 +1,24 @@
 package org.pargon.server.entity;
 
 import java.util.UUID;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table
+@Table(name = "media")
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,16 +26,14 @@ import lombok.NoArgsConstructor;
 public class Media {
 
   @Id
-  @Column(unique = true)
+  @Column(unique = true, nullable = false)
   @GeneratedValue
   private UUID id;
 
   @Column(nullable = false)
   private String path;
 
-  @Column(name = "hdr10_params")
-  private String hdr10Params;
-
-  @Column(name = "hdr10_plus_data")
-  private String hdr10PlusData;
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @JoinColumn(name = "hdr_meta_id")
+  private HdrMeta hdrMeta;
 }

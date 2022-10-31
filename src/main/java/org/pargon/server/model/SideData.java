@@ -9,7 +9,7 @@ public class SideData {
   @JsonProperty("side_data_type")
   private String sideDataType;
 
-  @JsonProperty("red_X")
+  @JsonProperty("red_x")
   private String redX;
 
   @JsonProperty("red_y")
@@ -40,8 +40,8 @@ public class SideData {
   private String maxLuminance;
 
   @JsonProperty("max_content")
-  private String maxContent;
+  private Integer maxContent;
 
   @JsonProperty("max_average")
-  private String maxAverage;
+  private Integer maxAverage;
 }

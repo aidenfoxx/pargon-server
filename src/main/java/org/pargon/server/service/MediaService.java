@@ -11,12 +11,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import org.pargon.server.entity.HdrMeta;
 import org.pargon.server.entity.Media;
 import org.pargon.server.entity.Setting;
 import org.pargon.server.entity.SettingKey;
 import org.pargon.server.exception.MediaServiceException;
 import org.pargon.server.model.FrameData;
-import org.pargon.server.model.MediaInfo;
+import org.pargon.server.model.MediaProbe;
 import org.pargon.server.model.SideData;
 import org.pargon.server.repository.MediaRepository;
 import org.pargon.server.repository.SettingsRepository;
@@ -24,18 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class MediaService {
 
   private static final String FFPROBE_COMMAND =
-    "%s -hide_banner -loglevel warning -select_streams v -print_format json" +
-    " -read_intervals \"%%+#1\" -show_entries" +
-    " \"frame=color_space,color_primaries,color_transfer,side_data_list\"" +
-    " -i %s";
-
-  private static final String HDR_PARAMS_FORMAT =
-    "hdr-opt=1:colorprim=%s:transfer=%s:colormatrix=%s" +
-    ":master-display=G(%s,%s)B(%s,%s)R(%s,%s)WP(%s,%s)L(%s,%s):max-cll=%s,%s";
+    "%s -hide_banner -loglevel quiet -print_format json -select_streams v:0" +
+    " -read_intervals \"%%+#1\" -show_entries frame \"%s\"";
 
   private final MediaRepository mediaRepository;
 
@@ -99,21 +96,33 @@ public class MediaService {
     currentMedia
       .values()
       .forEach(media -> {
-        if (foundMediaPaths.contains(media.getPath())) {
-          if (updateCurrentMedia) {
+        if (!foundMediaPaths.contains(media.getPath())) {
+          staleMedia.add(media);
+          return;
+        }
+
+        if (updateCurrentMedia) {
+          try {
             Media nextMedia = parseMediaFile(media.getPath());
             nextMedia.setId(media.getId());
             parsedMedia.add(nextMedia);
+          } catch (IOException e) {
+            log.error(
+              String.format("Failed to parse file `%s`", media.getPath()),
+              e
+            );
           }
-        } else {
-          staleMedia.add(media);
         }
       });
 
     // Parse found media
     foundMediaPaths.forEach(path -> {
       if (currentMedia.get(path) == null) {
-        parsedMedia.add(parseMediaFile(path));
+        try {
+          parsedMedia.add(parseMediaFile(path));
+        } catch (IOException e) {
+          log.error(String.format("Failed to parse file `%s`", path), e);
+        }
       }
     });
 
@@ -129,31 +138,24 @@ public class MediaService {
       );
   }
 
-  private Media parseMediaFile(String path) {
-    MediaInfo mediaInfo;
-
-    try {
-      mediaInfo =
-        objectMapper.readValue(
-          Runtime
-            .getRuntime()
-            .exec(String.format(FFPROBE_COMMAND, ffprobePath, path))
-            .getInputStream(),
-          MediaInfo.class
-        );
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+  private Media parseMediaFile(String path) throws IOException {
+    MediaProbe mediaProbe = objectMapper.readValue(
+      Runtime
+        .getRuntime()
+        .exec(String.format(FFPROBE_COMMAND, ffprobePath, path))
+        .getInputStream(),
+      MediaProbe.class
+    );
 
     return Media
       .builder()
       .path(path)
-      .hdr10Params(generateHdr10Params(mediaInfo))
+      .hdrMeta(generateHdrMeta(mediaProbe))
       .build();
   }
 
-  private String generateHdr10Params(MediaInfo mediaInfo) {
-    FrameData frameData = mediaInfo.getFrames().get(0);
+  private HdrMeta generateHdrMeta(MediaProbe mediaProbe) {
+    FrameData frameData = mediaProbe.getFrames().get(0);
 
     if (frameData == null) {
       return null;
@@ -163,7 +165,7 @@ public class MediaService {
       .getSideData()
       .stream()
       .filter(sideData ->
-        sideData.getSideDataType() == "Mastering display metadata"
+        sideData.getSideDataType().equals("Mastering display metadata")
       )
       .findFirst()
       .orElse(null);
@@ -171,7 +173,7 @@ public class MediaService {
       .getSideData()
       .stream()
       .filter(sideData ->
-        sideData.getSideDataType() == "Content light level metadata"
+        sideData.getSideDataType().equals("Content light level metadata")
       )
       .findFirst()
       .orElse(null);
@@ -180,23 +182,23 @@ public class MediaService {
       return null;
     }
 
-    return String.format(
-      HDR_PARAMS_FORMAT,
-      frameData.getColorPrimaries(),
-      frameData.getColorTransfer(),
-      frameData.getColorSpace(),
-      masteringData.getGreenX(),
-      masteringData.getGreenY(),
-      masteringData.getBlueX(),
-      masteringData.getBlueY(),
-      masteringData.getRedX(),
-      masteringData.getRedY(),
-      masteringData.getWhitePointX(),
-      masteringData.getWhitePointY(),
-      masteringData.getMinLuminance(),
-      masteringData.getMaxLuminance(),
-      lightLevelData.getMaxContent(),
-      lightLevelData.getMaxAverage()
-    );
+    return HdrMeta
+      .builder()
+      .colorSpace(frameData.getColorSpace())
+      .colorPrimaries(frameData.getColorPrimaries())
+      .colorTransfer(frameData.getColorTransfer())
+      .redX(masteringData.getRedX())
+      .redY(masteringData.getRedY())
+      .greenX(masteringData.getGreenX())
+      .greenY(masteringData.getGreenY())
+      .blueX(masteringData.getBlueX())
+      .blueY(masteringData.getBlueY())
+      .whitePointX(masteringData.getWhitePointX())
+      .whitePointY(masteringData.getWhitePointY())
+      .minLuminance(masteringData.getMinLuminance())
+      .maxLuminance(masteringData.getMaxLuminance())
+      .maxContent(lightLevelData.getMaxContent())
+      .maxAverage(lightLevelData.getMaxAverage())
+      .build();
   }
 }

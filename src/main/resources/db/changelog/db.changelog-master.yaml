@@ -15,10 +15,91 @@ databaseChangeLog:
               - column:
                   name: value
                   type: text
-  - changeSet:
-      id: '2'
-      author: aidenfoxx
-      changes:
+        - createTable:
+            tableName: hdr_meta
+            columns:
+              - column:
+                  name: id
+                  type: integer
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: color_space
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: color_primaries
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: color_transfer
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: red_x
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: red_y
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: green_x
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: green_y
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: blue_x
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: blue_y
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: white_point_x
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: white_point_y
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: min_luminance
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: max_luminance
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: max_content
+                  type: integer
+                  constraints:
+                    nullable: false
+              - column:
+                  name: max_average
+                  type: integer
+                  constraints:
+                    nullable: false
         - createTable:
             tableName: media
             columns:
@@ -34,8 +115,9 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: hdr10_params
-                  type: varchar(255)
-              - column:
-                  name: hdr10_plus_data
-                  type: text
+                  name: hdr_meta_id
+                  type: integer
+                  constraints:
+                    references: hdr_meta(id)
+                    foreignKeyName: fk_media_hdr_meta
+                    deleteCascade: true
