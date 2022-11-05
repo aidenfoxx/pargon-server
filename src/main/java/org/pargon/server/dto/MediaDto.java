@@ -1,16 +1,26 @@
 package org.pargon.server.dto;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
+@Value
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Jacksonized
 public class MediaDto {
 
-  UUID id;
-  String filename;
-  String path;
+  @NotEmpty
+  private UUID id;
+
+  @NotEmpty
+  private String filename;
+
+  @NotEmpty
+  private String path;
+
+  @NotNull
+  private Double duration;
 }

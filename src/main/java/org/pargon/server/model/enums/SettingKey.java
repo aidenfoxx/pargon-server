@@ -1,4 +1,4 @@
-package org.pargon.server.entity;
+package org.pargon.server.model.enums;
 
 import lombok.Getter;
 

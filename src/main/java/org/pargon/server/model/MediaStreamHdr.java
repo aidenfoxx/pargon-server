@@ -1,28 +1,34 @@
-package org.pargon.server.entity;
+package org.pargon.server.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "hdr_meta")
+@Table(name = "media_stream_hdr")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class HdrMeta {
+public class MediaStreamHdr {
 
   @Id
   @Column(nullable = false)
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
+  @OneToOne
+  @JoinColumn(name = "media_stream_id", nullable = false)
+  private MediaStream stream;
 
   @Column(name = "color_space", nullable = false)
   private String colorSpace;

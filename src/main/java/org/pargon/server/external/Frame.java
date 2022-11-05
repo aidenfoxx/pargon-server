@@ -1,11 +1,15 @@
-package org.pargon.server.model;
+package org.pargon.server.external;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-@Getter
-public class FrameData {
+@Value
+@Builder
+@Jacksonized
+public class Frame {
 
   @JsonProperty("color_space")
   private String colorSpace;

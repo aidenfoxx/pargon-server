@@ -1,22 +1,38 @@
 package org.pargon.server.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import org.pargon.server.dto.settings.EncoderPreset;
-import org.pargon.server.dto.settings.HardwareDecoder;
-import org.pargon.server.dto.settings.HardwareEncoder;
+import org.pargon.server.dto.enums.EncoderPreset;
+import org.pargon.server.dto.enums.HardwareDecoder;
+import org.pargon.server.dto.enums.HardwareEncoder;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+@Value
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Jacksonized
 public class SettingsDto {
 
-  public String mediaPath;
-  public String transcodePath;
-  public HardwareDecoder hardwareDecoder;
-  public HardwareEncoder hardwareEncoder;
-  public EncoderPreset encoderPreset;
-  public Long bitrate;
-  public Boolean encodeHvec;
+  @NotEmpty
+  private String mediaPath;
+
+  @NotEmpty
+  private String transcodePath;
+
+  @NotNull
+  private HardwareDecoder hardwareDecoder;
+
+  @NotNull
+  private HardwareEncoder hardwareEncoder;
+
+  @NotNull
+  private EncoderPreset encoderPreset;
+
+  @NotNull
+  private Long bitrate;
+
+  @NotNull
+  private Boolean encodeHvec;
 }

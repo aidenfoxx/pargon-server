@@ -1,9 +1,13 @@
-package org.pargon.server.model;
+package org.pargon.server.external;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-@Getter
+@Value
+@Builder
+@Jacksonized
 public class SideData {
 
   @JsonProperty("side_data_type")

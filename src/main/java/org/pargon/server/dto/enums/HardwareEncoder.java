@@ -1,4 +1,4 @@
-package org.pargon.server.dto.settings;
+package org.pargon.server.dto.enums;
 
 import lombok.Getter;
 

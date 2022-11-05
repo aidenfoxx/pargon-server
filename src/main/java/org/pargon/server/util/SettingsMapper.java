@@ -1,37 +1,71 @@
 package org.pargon.server.util;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.pargon.server.dto.SettingsDto;
-import org.pargon.server.dto.settings.EncoderPreset;
-import org.pargon.server.dto.settings.HardwareDecoder;
-import org.pargon.server.dto.settings.HardwareEncoder;
-import org.pargon.server.entity.Setting;
-import org.pargon.server.entity.SettingKey;
+import java.util.function.Function;
 
+import org.pargon.server.dto.SettingsDto;
+import org.pargon.server.dto.SettingsDto.SettingsDtoBuilder;
+import org.pargon.server.dto.enums.EncoderPreset;
+import org.pargon.server.dto.enums.HardwareDecoder;
+import org.pargon.server.dto.enums.HardwareEncoder;
+import org.pargon.server.model.Setting;
+import org.pargon.server.model.enums.SettingKey;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class SettingsMapper {
 
-  public static SettingsDto toDto(List<Setting> settings) {
-    Map<SettingKey, String> mappedSettings = settings
-      .stream()
-      .collect(Collectors.toMap(Setting::getKey, Setting::getValue));
+  // TODO: Can this parse a Setting?
+  private static <R> R parseSettingValue(String value, Function<String, R> parser) {
+    try {
+      return parser.apply(value);
+    } catch (IllegalArgumentException e) {
+      log.error("Failed to parse setting", e);
+      return null;
+    }
+  };
 
-    return SettingsDto
-      .builder()
-      .mediaPath(mappedSettings.get(SettingKey.MEDIA_PATH))
-      .transcodePath(mappedSettings.get(SettingKey.TRANSCODE_PATH))
-      .hardwareDecoder(
-        HardwareDecoder.valueOf(mappedSettings.get(SettingKey.HARDWARE_DECODER))
-      )
-      .hardwareEncoder(
-        HardwareEncoder.valueOf(mappedSettings.get(SettingKey.HARDWARE_ENCODER))
-      )
-      .encoderPreset(
-        EncoderPreset.valueOf(mappedSettings.get(SettingKey.ENCODER_PRESET))
-      )
-      .bitrate(Long.valueOf(mappedSettings.get(SettingKey.BITRATE)))
-      .build();
+  public static SettingsDto toDto(List<Setting> settings) {
+    SettingsDtoBuilder settingsDtoBuilder = SettingsDto.builder();
+
+    settings.forEach(setting -> {
+      switch (setting.getKey()) {
+        case MEDIA_PATH:
+         settingsDtoBuilder.mediaPath(setting.getValue());
+          break;
+      
+        case TRANSCODE_PATH:
+          settingsDtoBuilder.mediaPath(setting.getValue());
+          break;
+
+        case HARDWARE_DECODER:
+          settingsDtoBuilder.hardwareDecoder(
+            parseSettingValue(setting.getValue(), HardwareDecoder::valueOf)
+          );
+          break;
+
+        case HARDWARE_ENCODER:
+          settingsDtoBuilder.hardwareEncoder(
+            parseSettingValue(setting.getValue(), HardwareEncoder::valueOf)
+          );
+          break;
+
+        case ENCODER_PRESET:
+          settingsDtoBuilder.encoderPreset(
+            parseSettingValue(setting.getValue(), EncoderPreset::valueOf)
+          );
+          break;
+
+        case BITRATE:
+          settingsDtoBuilder.bitrate(
+            parseSettingValue(setting.getValue(), Long::valueOf)
+          );
+          break;
+      }
+    });
+
+    return settingsDtoBuilder.build();
   }
 
   public static List<Setting> toEntities(SettingsDto settingsDto) {
@@ -39,32 +73,32 @@ public class SettingsMapper {
       Setting
         .builder()
         .key(SettingKey.MEDIA_PATH)
-        .value(settingsDto.mediaPath)
+        .value(settingsDto.getMediaPath())
         .build(),
       Setting
         .builder()
         .key(SettingKey.TRANSCODE_PATH)
-        .value(settingsDto.transcodePath)
+        .value(settingsDto.getTranscodePath())
         .build(),
       Setting
         .builder()
         .key(SettingKey.HARDWARE_DECODER)
-        .value(settingsDto.hardwareDecoder.toString())
+        .value(settingsDto.getHardwareDecoder().toString())
         .build(),
       Setting
         .builder()
         .key(SettingKey.HARDWARE_ENCODER)
-        .value(settingsDto.hardwareEncoder.toString())
+        .value(settingsDto.getHardwareEncoder().toString())
         .build(),
       Setting
         .builder()
         .key(SettingKey.ENCODER_PRESET)
-        .value(settingsDto.encoderPreset.toString())
+        .value(settingsDto.getEncoderPreset().toString())
         .build(),
       Setting
         .builder()
         .key(SettingKey.BITRATE)
-        .value(settingsDto.bitrate.toString())
+        .value(settingsDto.getBitrate().toString())
         .build()
     );
   }

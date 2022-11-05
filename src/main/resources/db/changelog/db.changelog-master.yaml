@@ -16,7 +16,26 @@ databaseChangeLog:
                   name: value
                   type: text
         - createTable:
-            tableName: hdr_meta
+            tableName: media
+            columns:
+              - column:
+                  name: id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: path
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: duration
+                  type: double
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: media_stream
             columns:
               - column:
                   name: id
@@ -24,6 +43,50 @@ databaseChangeLog:
                   autoIncrement: true
                   constraints:
                     primaryKey: true
+                    nullable: false
+              - column:
+                  name: media_id
+                  type: varchar(255)
+                  constraints:
+                    references: media(id)
+                    foreignKeyName: fk_media_stream_media
+                    deleteCascade: true
+                    nullable: false
+              - column:
+                  name: index
+                  type: integer
+                  constraints:
+                    nullable: false
+              - column:
+                  name: codec_type
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: codec_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: channel_layout
+                  type: varchar(255)
+        - createTable:
+            tableName: media_stream_hdr
+            columns:
+              - column:
+                  name: id
+                  type: integer
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: media_stream_id
+                  type: integer
+                  constraints:
+                    references: media_stream(id)
+                    foreignKeyName: fk_media_stream_hdr_media_stream
+                    deleteCascade: true
                     nullable: false
               - column:
                   name: color_space
@@ -100,24 +163,3 @@ databaseChangeLog:
                   type: integer
                   constraints:
                     nullable: false
-        - createTable:
-            tableName: media
-            columns:
-              - column:
-                  name: id
-                  type: varchar(255)
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: path
-                  type: varchar(255)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: hdr_meta_id
-                  type: integer
-                  constraints:
-                    references: hdr_meta(id)
-                    foreignKeyName: fk_media_hdr_meta
-                    deleteCascade: true
