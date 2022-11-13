@@ -1,76 +1,73 @@
 package org.pargon.server.service;
 
-import java.util.UUID;
-import org.pargon.server.exception.MediaNotFoundException;
+import java.util.Locale;
+
 import org.pargon.server.model.Media;
-import org.pargon.server.repository.MediaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PlaylistService {
 
   private static final String PLAYLIST_TEMPLATE =
-    "#EXTM3U\n" +
-    "#EXT-X-VERSION:3\n" +
-    "#EXT-X-TARGETDURATION:%d\n" +
-    "#EXT-X-MEDIA-SEQUENCE:0\n" +
-    "%s" +
-    "#EXT-X-ENDLIST";
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+    "<MPD xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+    "  xmlns=\"urn:mpeg:dash:schema:mpd:2011\"\n" +
+    "  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "  xsi:schemaLocation=\"urn:mpeg:DASH:schema:MPD:2011 http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-DASH_schema_files/DASH-MPD.xsd\"\n" +
+    "  profiles=\"urn:mpeg:dash:profile:isoff-live:2011\"\n" +
+    "  type=\"static\"\n" +
+    "  mediaPresentationDuration=\"PT%fS\"\n" +
+    "  maxSegmentDuration=\"PT3.0S\"\n" +
+    "  minBufferTime=\"PT9.0S\">\n" +
+    "  <Period start=\"PT0.0S\">\n" +
+    "    <AdaptationSet startWithSAP=\"1\" segmentAlignment=\"true\">\n" +
+    "      <Representation mimeType=\"video/mp4\" bandwidth=\"8000000\" width=\"3840\" height=\"2160\" sar=\"1:1\">\n" +
+    "        <SegmentList duration=\"3.00\">\n" +
+    "          %s" +
+    "        </SegmentList>\n" +
+    "      </Representation>\n" +
+    "    </AdaptationSet>\n" +
+    "  </Period>\n" +
+    "</MPD>\n";
 
-  private static final String PLAYLIST_RECORD_TEMPLATE =
-    "#EXTINF:%d\n" +
-    "/transcode/%s.ts?" +
-    "segment=%i&" +
-    "segmentDuration=%f&" +
-    "audioStreamIndex=%i&" +
-    "videoStreamIndex=%i&" +
-    "subtitleStreamIndex=%i&" +
-    "subtitleFileIndex=%i&" +
-    "encodeHevc=%b\n";
+  private static final String PLAYLIST_RECORD =
+    "<SegmentURL media=\"" +
+    "/media/%s.mp4?" +
+    "segment=%d&amp;" +
+    "segmentDuration=%f&amp;" +
+    "audioStreamIndex=%d&amp;" +
+    "videoStreamIndex=%d&amp;" +
+    "subtitleStreamIndex=%d&amp;" +
+    "encodeHevc=%b\"/>\n";
 
   private final Double PLAYLIST_SEGMENT_LENGTH = 3.0;
 
-  private final MediaRepository mediaRepository;
-
-  @Autowired
-  public PlaylistService(MediaRepository mediaRepository) {
-    this.mediaRepository = mediaRepository;
-  }
-
   public String generatePlaylist(
-    UUID mediaId,
+    Media media,
     Integer audioStreamIndex,
     Integer videoStreamIndex,
     Integer subtitleStreamIndex,
-    Integer subtitleFileIndex,
     Boolean encodeHvec
   ) {
-    Media media = mediaRepository.findById(mediaId).orElse(null);
-
-    if (media == null) {
-      throw new MediaNotFoundException();
-    }
-
     Double duration = media.getDuration();
     Integer segmentCount = (int) Math.ceil(duration / PLAYLIST_SEGMENT_LENGTH);
-    String playlistSegments = "";
+    String segments = "";
 
     for (int i = 0; i < segmentCount; i++) {
-      playlistSegments +=
+      segments +=
         String.format(
-          PLAYLIST_RECORD_TEMPLATE,
-          PLAYLIST_SEGMENT_LENGTH,
+          Locale.US,
+          PLAYLIST_RECORD,
+          media.getId(),
           i,
           PLAYLIST_SEGMENT_LENGTH,
           audioStreamIndex,
           videoStreamIndex,
           subtitleStreamIndex,
-          subtitleFileIndex,
           encodeHvec
         );
     }
 
-    return String.format(PLAYLIST_TEMPLATE, duration, playlistSegments);
+    return String.format(Locale.US, PLAYLIST_TEMPLATE, duration, segments);
   }
 }

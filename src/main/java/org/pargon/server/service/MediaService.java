@@ -108,7 +108,7 @@ public class MediaService {
     for (Media media : currentMedia.values()) {
       if (!foundMediaPaths.contains(media.getPath())) {
         staleMedia.add(media);
-        return;
+        continue;
       }
 
       if (updateCurrentMedia) {
