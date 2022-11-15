@@ -1,7 +1,6 @@
 package org.pargon.server.service;
 
 import java.util.Locale;
-
 import org.pargon.server.model.Media;
 import org.springframework.stereotype.Service;
 
@@ -17,30 +16,25 @@ public class PlaylistService {
     "  profiles=\"urn:mpeg:dash:profile:isoff-live:2011\"\n" +
     "  type=\"static\"\n" +
     "  mediaPresentationDuration=\"PT%fS\"\n" +
-    "  maxSegmentDuration=\"PT3.0S\"\n" +
-    "  minBufferTime=\"PT9.0S\">\n" +
+    "  maxSegmentDuration=\"PT%fS\"\n" +
+    "  minBufferTime=\"PT%fS\">\n" +
     "  <Period start=\"PT0.0S\">\n" +
     "    <AdaptationSet startWithSAP=\"1\" segmentAlignment=\"true\">\n" +
-    "      <Representation mimeType=\"video/mp4\" bandwidth=\"8000000\" width=\"3840\" height=\"2160\" sar=\"1:1\">\n" +
-    "        <SegmentList duration=\"3.00\">\n" +
-    "          %s" +
-    "        </SegmentList>\n" +
+    "      <Representation mimeType=\"video/mp4\" bandwidth=\"8000000\" width=\"3840\" height=\"1600\" sar=\"1:1\">\n" +
+    "        <SegmentTemplate startNumber=\"0\" duration=\"%d\" media=\"" +
+    "/media/%s.mp4?" +
+    "segment=$Number$&amp;" +
+    "segmentDuration=%f&amp;" +
+    "audioStreamIndex=%d&amp;" +
+    "videoStreamIndex=%d&amp;" +
+    "subtitleStreamIndex=%d&amp;" +
+    "encodeHevc=%b\"/>\n" +
     "      </Representation>\n" +
     "    </AdaptationSet>\n" +
     "  </Period>\n" +
     "</MPD>\n";
 
-  private static final String PLAYLIST_RECORD =
-    "<SegmentURL media=\"" +
-    "/media/%s.mp4?" +
-    "segment=%d&amp;" +
-    "segmentDuration=%f&amp;" +
-    "audioStreamIndex=%d&amp;" +
-    "videoStreamIndex=%d&amp;" +
-    "subtitleStreamIndex=%d&amp;" +
-    "encodeHevc=%b\"/>\n";
-
-  private final Double PLAYLIST_SEGMENT_LENGTH = 3.0;
+  private final Double PLAYLIST_SEGMENT_DURATION = 3.0;
 
   public String generatePlaylist(
     Media media,
@@ -50,24 +44,21 @@ public class PlaylistService {
     Boolean encodeHvec
   ) {
     Double duration = media.getDuration();
-    Integer segmentCount = (int) Math.ceil(duration / PLAYLIST_SEGMENT_LENGTH);
-    String segments = "";
 
-    for (int i = 0; i < segmentCount; i++) {
-      segments +=
-        String.format(
-          Locale.US,
-          PLAYLIST_RECORD,
-          media.getId(),
-          i,
-          PLAYLIST_SEGMENT_LENGTH,
-          audioStreamIndex,
-          videoStreamIndex,
-          subtitleStreamIndex,
-          encodeHvec
-        );
-    }
-
-    return String.format(Locale.US, PLAYLIST_TEMPLATE, duration, segments);
+    return String.format(
+      Locale.US,
+      PLAYLIST_TEMPLATE,
+      duration,
+      PLAYLIST_SEGMENT_DURATION,
+      PLAYLIST_SEGMENT_DURATION * 3,
+      // TODO: Just make this int
+      PLAYLIST_SEGMENT_DURATION.longValue(),
+      media.getId(),
+      PLAYLIST_SEGMENT_DURATION,
+      audioStreamIndex,
+      videoStreamIndex,
+      subtitleStreamIndex,
+      encodeHvec
+    );
   }
 }

@@ -15,14 +15,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+// https://gist.github.com/samson-sham/7cb3a404a7aaaff62ec0ebbe08fb84e1
 @Service
 public class TranscodeService {
 
-  // TODO: Do we need forced key frames or frag_keyframe?
   private static final String FFMPEG_TRANSCODE_EXEC =
-    "%s -hide_banner -loglevel quiet -y -ss %f -t %f -i \"%s\" -an -preset veryfast" +
-    " -codec:v libx264 -codec:a aac  -f mp4" +
-    " -movflags dash+delay_moov+skip_sidx+skip_trailer+frag_keyframe -fragment_index %d pipe:";
+    "%s -hide_banner -loglevel quiet -y -vsync 2 -ss %f -t %f -i \"%s\"" +
+    " -preset veryfast -map_chapters -1 -map_metadata -1 -map 0:v:0" +
+    " -codec:v libx264 -b:v 8000k -f mp4" +
+    " -movflags empty_moov+default_base_moof+skip_sidx+skip_trailer+frag_custom" +
+    " -fragment_index %d pipe:1";
 
   private static final String FFMPEG_HDR_PARAMS =
     "hdr-opt=1:colorprim=%s:transfer=%s:colormatrix=%s" +
@@ -85,11 +87,10 @@ public class TranscodeService {
       startTime,
       segmentDuration,
       media.getPath(),
-      segment
+      segment + 1
       //outputFile.getAbsolutePath()
     );
 
-    // TODO: Check "Fragment sequence discontinuity detected 1 != 0" in output
     return Runtime
       .getRuntime()
       .exec(
@@ -100,8 +101,7 @@ public class TranscodeService {
           startTime,
           segmentDuration,
           media.getPath(),
-          segment
-          // TODO: This doesn't correctly output dash file
+          segment + 1
           //outputFile.getAbsolutePath()
         )
       ).getInputStream();
