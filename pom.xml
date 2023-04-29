@@ -14,7 +14,7 @@
     <springdoc-openapi.version>2.0.0-RC1</springdoc-openapi.version>
     <sqlite-jdbc.version>3.39.3.0</sqlite-jdbc.version>
     <hibernate-dialects.version>6.1.4.Final</hibernate-dialects.version>
-    <liquibase.core.version>4.17.1</liquibase.core.version>
+    <liquibase-core.version>4.17.1</liquibase-core.version>
     <junit-jupiter.version>5.9.1</junit-jupiter.version>
     <maven-surefire.version>2.22.2</maven-surefire.version>
     <maven-failsafe.version>2.22.2</maven-failsafe.version>
@@ -63,7 +63,7 @@
     <dependency>
       <groupId>org.liquibase</groupId>
       <artifactId>liquibase-core</artifactId>
-      <version>${liquibase.core.version}</version>
+      <version>${liquibase-core.version}</version>
     </dependency>
     <!-- Testing -->
     <dependency>
