@@ -11,7 +11,7 @@
   <properties>
     <java.version>17</java.version>
     <lombok.version>1.18.24</lombok.version>
-    <springdoc-openapi.version>2.0.0-RC1</springdoc-openapi.version>
+    <springdoc-openapi.version>2.1.0</springdoc-openapi.version>
     <sqlite-jdbc.version>3.39.3.0</sqlite-jdbc.version>
     <hibernate-dialects.version>6.1.4.Final</hibernate-dialects.version>
     <liquibase-core.version>4.17.1</liquibase-core.version>
